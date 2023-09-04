@@ -19,7 +19,9 @@
 	<script type="text/javascript" src="words.js"></script>
 	<script type="text/javascript" src="components.js"></script>
 	<script type="text/javascript" src="github.js"></script>
-
+  <script type="module">
+    import "./js/enocean-monitor.js"
+  </script>
 	<script type="text/javascript">
 		let eepList, deviceList, sysConfig;
 		let eepArray = [];
@@ -164,6 +166,7 @@
 							devices[_devices.rows[j].value._id] = _devices.rows[j].value;
 							if(_devices.rows[j].value._id !== namespace + 'gateway'){
 								showDevice(_devices.rows[j].value);
+								document.getElementById("monitor").addKnownDevice(_devices.rows[j].value.native.id)
 							}
 
 						}
@@ -197,11 +200,15 @@
 
 		//subscribe to lastID
 		socket.emit('subscribe', 'enocean.' + instance + '.gateway.lastID');
-
+    socket.emit('subscribe', 'enocean.' + instance + '.gateway.lastTelegram');
+    
 		socket.on('stateChange', function (id, state) {
 			//console.log(state);
 				if(id === 'enocean.' + instance + '.gateway.lastID'){
 					$('#lastID').text(state.val);
+				}
+				if(id === 'enocean.' + instance + '.gateway.lastTelegram'){
+					document.getElementById("monitor").addNewTelegram(state.val);
 				}
 		});
 
@@ -430,6 +437,7 @@
 				<ul class="tabs">
 					<li class="tab col s2"><a href="#tab-devices"  class="translate active">Devices</a></li>
 					<li class="tab col s2"><a href="#tab-main"  class="translate active">Settings</a></li>
+					<li class="tab col s2"><a href="#tab-monitor"  class="translate active">Monitor</a></li>
 					<li class="tab col s2"><a href="#tab-support-info"  class="translate active">Support information</a></li>
 				</ul>
 			</div>
@@ -521,9 +529,15 @@
 						</tbody>
 					</table>
 				</div>
-
+        
+	      
 			</div>
-
+			
+			<!-- Monitor Tab -->
+      <div id="tab-monitor" class="col s12 page">
+				  <enocean-monitor id="monitor"></enocean-monitor>
+			</div>
+			
 			<!-- Support information Tab -->
 			<div id="tab-support-info" class="col s12 page">
 				<div class="row">
