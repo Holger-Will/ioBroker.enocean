@@ -19,7 +19,12 @@
 	<script type="text/javascript" src="words.js"></script>
 	<script type="text/javascript" src="components.js"></script>
 	<script type="text/javascript" src="github.js"></script>
+  <script type="module">
+    import './js/enocean-monitor.js';
+    import './js/device-list.js';
 
+
+  </script>
 	<script type="text/javascript">
 		let eepList, deviceList, sysConfig;
 		let eepArray = [];
@@ -150,15 +155,24 @@
 				sendTo('enocean.' + instance, 'deleteDevice', obj.native.id);
 				// remove from list
 				$(this).closest('tr').remove();
+				console.log('enocean.' + instance,obj.native.id)
 			});
 		}
 
 
 		function getDevices() {
 			socket.emit('getObjectView', 'system', 'device', { startkey: 'enocean.' + instance + '.', endkey: 'enocean.' + instance + '.\u9999', include_docs: true }, function (err, _devices) {
+				let namespace = 'enocean.' + instance + '.';
 				socket.emit('getStates', function (err, _values) {
-					let namespace = 'enocean.' + instance + '.';
-					$('#devices_body').html('');
+				  _devices.rows.map(item=>{
+				    item.states =Object.fromEntries(Object.entries(_values).filter(([key]) => key.includes(item.id)).map(keys=>{
+				      keys[0]=keys[0].replace(item.id+".","")
+				      return keys
+				    }))
+				  })
+				  document.getElementById("device-list").setAttribute("devices",JSON.stringify(_devices.rows))
+					
+					/*$('#devices_body').html('');
 					if (_devices && _devices.rows && _devices.rows.length) {
 						for (let j = 0; j < _devices.rows.length; j++) {
 							devices[_devices.rows[j].value._id] = _devices.rows[j].value;
@@ -167,7 +181,7 @@
 							}
 
 						}
-					}
+					}*/
 				});
 			});
 		}
@@ -195,14 +209,22 @@
 			navigator.clipboard.writeText(element);
 		}
 
-		//subscribe to lastID
-		socket.emit('subscribe', 'enocean.' + instance + '.gateway.lastID');
-
+		//subscribe to lastID and lastTelegram
+		socket.emit('subscribe', 'enocean.' + instance + '.*');
+    
 		socket.on('stateChange', function (id, state) {
+		  let curInst = 'enocean.' + instance
 			//console.log(state);
-				if(id === 'enocean.' + instance + '.gateway.lastID'){
-					$('#lastID').text(state.val);
-				}
+			  switch(id){
+			    case curInst + '.gateway.lastID':
+			      $('#lastID').text(state.val);
+			      break;
+			    case curInst + '.gateway.lastTelegram':
+			      document.getElementById("enocean-monitor").addNewTelegram(state.val)
+			      break;
+			    default:
+			    document.getElementById("device-list").notifyChange(id,state)
+			  }
 		});
 
 		/**
@@ -430,6 +452,7 @@
 				<ul class="tabs">
 					<li class="tab col s2"><a href="#tab-devices"  class="translate active">Devices</a></li>
 					<li class="tab col s2"><a href="#tab-main"  class="translate active">Settings</a></li>
+					<li class="tab col s2"><a href="#tab-monitor"  class="translate active">Monitor</a></li>
 					<li class="tab col s2"><a href="#tab-support-info"  class="translate active">Support information</a></li>
 				</ul>
 			</div>
@@ -505,6 +528,7 @@
 				</div>
 
 				<div id="devices">
+				  <enocean-device-list id="device-list"></enocean-device-list>
 					<table class="centered">
 						<thead>
 							<tr>
@@ -524,6 +548,16 @@
 
 			</div>
 
+
+      <!-- Monitor Tab -->
+			<div id="tab-monitor" class="col s12 page">
+				<div class="row">
+					<div id="monitor-body" class="col s12">
+					  <enocean-monitor id="enocean-monitor"></enocean-monitor>
+					</div>
+				</div>
+			</div>
+			
 			<!-- Support information Tab -->
 			<div id="tab-support-info" class="col s12 page">
 				<div class="row">

@@ -43,7 +43,6 @@ let timeoutQueue, timeoutWait, timeoutTeachin, timeoutGateway;
 
 
 class Enocean extends utils.Adapter {
-
 	/**
 	 * @param {Partial<ioBroker.AdapterOptions>} [options={}]
 	 */
@@ -72,6 +71,7 @@ class Enocean extends utils.Adapter {
 	async onReady() {
 		const systemConfig = await this.getForeignObjectAsync('system.config');
 		this.systemConfig = systemConfig.common;
+
 
 		// Reset the connection indicator during startup
 		this.setState('info.connection', {val: false, ack: true});
@@ -351,7 +351,6 @@ class Enocean extends utils.Adapter {
 	 * @param {ioBroker.Message} obj
 	 */
 	async onMessage(obj) {
-
 		// responds to the adapter that sent the original message
 		function respond(response, that) {
 			if (obj.callback)
