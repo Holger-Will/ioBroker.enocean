@@ -82,6 +82,7 @@ class EnoceanDeviceListItem extends LitElement{
     let prop = longId.pop()
     window.sendTo("enocean.0", 'deleteDevice', prop);
     evt.stopPropagation()
+    this.parentNode.removeChild(this)
   }
   render() {
     return html`
@@ -95,7 +96,7 @@ class EnoceanDeviceListItem extends LitElement{
               <div><rssi-icon value="${this.data.value.native.eep[0].startsWith("X")?0:this.data.states.rssi.val}"></rssi-icon></div>
             </div>
             <div class="cardbody">
-              <img src="https://enocean-js.github.io/device-images/nodon-soft-remote.jpg" width="100px"/>
+              <img src="${this.data.value.native.imgURL?this.data.value.native.imgURL:""}" width="100px"/>
               <div class="atts">
                 ${Object.keys(this.data.states).map(item=>html`<div>${item}:${this.data.states[item]?this.data.states[item].val:"???"}</div>`)}
               </div>

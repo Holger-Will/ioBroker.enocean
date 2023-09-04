@@ -19,7 +19,6 @@ class EnoceanDeviceList extends LitElement{
   notifyChange(id,state){
     let tmp = id.split(".")
     tmp.pop()
-    console.log(tmp.join("."))
     try{
     this.shadowRoot.getElementById(tmp.join(".")).notify(id,state)
     }catch(err){

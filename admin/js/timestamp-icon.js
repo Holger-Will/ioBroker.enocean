@@ -24,7 +24,6 @@ class EnoceanTimestampIcon extends LitElement{
   
   render() {
     const rtf1 = new Intl.RelativeTimeFormat(undefined, { style: 'short', numeric: "auto" });
-    console.log(rtf1.format(3, 'quarter'));
     let t = 0
     let tdiff = (new Date()).getTime() - this.value
     let secs = tdiff/1000
@@ -33,7 +32,6 @@ class EnoceanTimestampIcon extends LitElement{
     let days = hrs/24
     if(secs<60){
       t = rtf1.format(-Math.floor(secs), 'seconds')
-      console.log(-secs,t,"seconds")
     } else if(mins<60){
       t = rtf1.format(-Math.floor(mins), 'minutes')
     } else if(hrs<24){
@@ -41,9 +39,6 @@ class EnoceanTimestampIcon extends LitElement{
     } else {
       t = rtf1.format(-Math.floor(days), 'days')
     }
-
-    console.log(t)
-    
     return html`<div id="container">
     <div style="line-height:16px" class="material-icons">schedule</div>
     <div id="value">${t}</div></div>`;
